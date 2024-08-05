@@ -22,6 +22,6 @@ public class UserController {
         Object o4 = authentication.getCredentials();
         Object o5 = authentication.getPrincipal();
 
-        return "Hello user :" + authentication.getName();
+        return "Welcome to user page :" + authentication.getName();
     }
 }

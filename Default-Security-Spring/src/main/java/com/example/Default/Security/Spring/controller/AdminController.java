@@ -22,7 +22,7 @@ public class AdminController {
         Object o4 = authentication.getCredentials();
         Object o5 = authentication.getPrincipal();
 
-        return "Hello admin :" + authentication.getName();
+        return "Welcome to page admin :" + authentication.getName();
     }
 
 

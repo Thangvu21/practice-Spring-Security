@@ -5,30 +5,60 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 @Configuration
+@EnableWebSecurity
 public class SpringConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        http.sessionManagement()
-                .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-                .and()
+//        http.sessionManagement()
+//                .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+//                .and()
+//                .authorizeRequests()
+//                .requestMatchers("/index/**").permitAll()
+//                .requestMatchers("/resource/**").authenticated()
+//                .requestMatchers("/admin/**").hasAnyAuthority("ROLE_ADMIN", "ROLE_USER")
+//                .requestMatchers("/user/**").hasRole("USER")
+//                .and()
+//                .formLogin(login -> login.loginPage("/login"))
+//                .and()
+//                .authenticationManager(authenticationManager(http));
+        http
                 .authorizeRequests()
-                .requestMatchers("/index/**").permitAll()
-                .requestMatchers("/resource/**").authenticated()
-                .requestMatchers("/admin/**").hasAnyAuthority("ROLE_ADMIN", "ROLE_USER")
-                .requestMatchers("/user/**").hasRole("USER")
+                .requestMatchers("/admin/**").hasRole("ADMIN")
+                .requestMatchers("user/**").hasRole("USER")
+                .anyRequest()
+                .authenticated()
                 .and()
-                .httpBasic()
+                .formLogin()
+                .loginPage("/login")
+                .loginProcessingUrl("/sign-in")
+                .defaultSuccessUrl("/home", true)
+                .permitAll()
                 .and()
-                .authenticationManager(authenticationManager(http));
+                .logout()
+                .invalidateHttpSession(true)
+                .deleteCookies("JSESSIONID")
+                .clearAuthentication(true)
+                .logoutRequestMatcher(new AntPathRequestMatcher("logout"))
+                .logoutSuccessUrl("/login?logout")
+                .and()
+                .exceptionHandling()
+                .accessDeniedPage("/403")
+                .and()
+                .csrf().disable()
+                .authenticationManager(authenticationManager(http))
+                .httpBasic();
 
         return http.build();
     }
@@ -40,6 +70,13 @@ public class SpringConfig {
                 .passwordEncoder(passwordEncoder())
                 .and()
                 .build();
+    }
+
+    @Bean
+    public WebSecurityCustomizer customizer() {
+        // bỏ qua chặn file css html
+        return web -> web.ignoring()
+                .requestMatchers("/css/**", "/js/**");
     }
 
     @Bean
