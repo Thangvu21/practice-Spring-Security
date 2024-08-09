@@ -12,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
 
@@ -27,6 +28,8 @@ public class UserServiceImpli implements UserService {
     private final RoleRepository roleRepository;
 
     private final UserRepository userRepository;
+
+    private final BCryptPasswordEncoder passwordEncoder;
 
     @Override
     public BaseResponse registerAccount(UserDto userDto) {
@@ -56,7 +59,7 @@ public class UserServiceImpli implements UserService {
     private User insertUser(UserDto userDto) {
         User user = new User();
         user.setUsername(userDto.getUsername());
-        user.setPassword(userDto.getPassword());
+        user.setPassword(passwordEncoder.encode(userDto.getPassword()));
 
         Set<Role> roles = new HashSet<>();
         roles.add(roleRepository.findRoleByName(userDto.getRole()));
